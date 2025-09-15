@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environments
+.env
+.venv/
+venv/
+tests/venv/
+ENV/
+env/
+pip-wheel-metadata/
+
+# IDE/Editor
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# OneDrive temp files
+~$*
+*.tmp
+
+# Coverage / Test
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+
+
