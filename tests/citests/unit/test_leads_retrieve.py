@@ -11,7 +11,7 @@ def test_retrieve_lead_and_print_fields(capsys):
     mock_response.ok = True
     mock_response.json.return_value = {
         "id": "1111",
-        "name": "Test-Lead",
+        "name": "Test Lead",
         "code": "2234",
         "createdAt": "2025-09-22T13:00:00Z",
         "details": {"k2", "v2"},
@@ -23,6 +23,6 @@ def test_retrieve_lead_and_print_fields(capsys):
     out, err = capsys.readouterr()
     assert "Lead:" in out
     assert "ID:     1111" in out
-    assert "Name:   Test-Lead",
+    assert "Name:   Test Lead" in out
     assert "Code:   2234" in out
     print(out)
