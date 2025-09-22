@@ -2,20 +2,11 @@ import requests
 
 url = "https://apiv2.emil.de/insuranceservice/v1/products"
 
-# change payload if needed
-payload = {
-    "defaultLanguage": "German",
-    "name": "testviaIDE",
-    "insuredObjectTypes": ["car"],
-    "contractDurationDays": 360,
-    "slug": "productslugIDE"
-}
 headers = {
     "accept": "application/json",
-    "content-type": "application/json",
     "authorization": "Bearer eyJraWQiOiJTWG9PU3RWOEEzNlVKR2o3bGRsXC9ocGU2QUV6T2E1Nzc3YmM3dTVKeXEyMD0iLCJhbGciOiJSUzI1NiJ9.eyJjdXN0b206dGVuYW50X3NsdWciOiJmdW5rLXNhbmRib3gtcHJvZCIsInN1YiI6IjdkOWE0ZTBhLWNkNTgtNDEwYS05MDU2LTZiOTUyNzkyNDM4MSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbVwvZXUtY2VudHJhbC0xXzJ4ZWtITzhTOSIsImNvZ25pdG86dXNlcm5hbWUiOiJjaHJpcytmdW5rYWRtaW4xQGVtaWwuZGUiLCJjdXN0b206dGVuYW50X2lkIjoiNDAiLCJnaXZlbl9uYW1lIjoiRnVuayIsImN1c3RvbTpjb2RlIjoidXNyX3VGMnZvQlJWR2wwUFMwUjFzYlp2SCIsIm9yaWdpbl9qdGkiOiI3YmYyYjQyZS0yZWVmLTRkYTctYmZmMy1kZjJmZTJmMmUzODYiLCJhdWQiOiI2cmNvN2Y5dGtldXRxaDZvNjQ4cmZkdDVkbyIsImV2ZW50X2lkIjoiMzIxNDExZjMtM2E4Mi00NWQyLWEyYmQtYmM5ODI0ZWMwMzE5IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3NTgwMTEyMTUsImV4cCI6MTc1ODAxNDgxNSwiY3VzdG9tOnJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4MDExMjE1LCJmYW1pbHlfbmFtZSI6IkFkbWluIiwiY3VzdG9tOnRlbmFudF9oaWVyYXJjaHkiOiJmdW5rLXNhbmRib3gtcHJvZCIsImp0aSI6IjZmYjg2M2NmLWZkMmUtNDNhZi1hZmNjLTEzZjkwODVmNjllMCIsImVtYWlsIjoiY2hyaXMrZnVua2FkbWluMUBlbWlsLmRlIn0.iZTdp76w3Ok0UhmtIQBuUqfx7-4O0X7rWgBddUZ_CH_0daJaZLjeOi-g357kCnLtUok9nxQU1qHkk0e0UppeLS1qQptGq8NZZEkkylxMcqtEoeDZYE8eNaHYsH7cGX-5bT65lygA0KRVeid5PJOCKpoYMxgWZ4OOTUq-GlK6vs7Z8beqBzHRZZT-BK8ki1ql_SW7h99xvviz740VGpYCaBJ1uRsb_kqJAwbhw0GmdKFUxe0EXDckeL98-gtI9AU9m_owro4ChA4jO8nm5X2zD3dlykyti356vHnwMzpvxoWrAHPKsSDsBSVKDtxnaOstOpL2xRZEJInak_AjE8ux5g"
 }
 
-response = requests.post(url, json=payload, headers=headers, verify=False)
+response = requests.get(url, headers=headers, verify=False)
 
 print(response.text)

@@ -1,0 +1,18 @@
+# Microsoft Graph Konfiguration
+# Diese Datei kopieren zu .env und mit echten Werten füllen
+
+# Azure AD Tenant ID (finden Sie im Azure Portal unter Azure AD > Overview)
+TENANT_ID=your-tenant-id-here
+
+# Azure AD App Registration Client ID (finden Sie im Azure Portal unter App registrations > Ihre App > Overview)
+CLIENT_ID=your-client-id-here
+
+# Azure AD App Registration Client Secret (erstellen Sie unter App registrations > Ihre App > Certificates & secrets)
+CLIENT_SECRET=your-client-secret-here
+
+# E-Mail Konfiguration
+EMAIL_FROM=f.paustian@funk-gruppe.de
+EMAIL_TO=f.paustian@funk-gruppe.de,another@example.com
+
+# API Token (falls benötigt)
+# API_TOKEN=your-api-token-here

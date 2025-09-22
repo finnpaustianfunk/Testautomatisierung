@@ -1,0 +1,21 @@
+import requests
+
+url = "https://apiv2.emil.de/billingservice/v1/correction-invoices"
+
+# change payload if needed
+payload = {
+    "accountNumber": "54323",
+    "policyCode": "pol4532",
+    "policyNumber": "543",
+    "billingIntervalFrom": "2025-09-09T00:00:00",
+    "billingIntervalTo": "2025-09-09T00:00:00"
+}
+headers = {
+    "accept": "application/json",
+    "content-type": "application/json",
+    "authorization": "Bearer eyJraWQiOiJTWG9PU3RWOEEzNlVKR2o3bGRsXC9ocGU2QUV6T2E1Nzc3YmM3dTVKeXEyMD0iLCJhbGciOiJSUzI1NiJ9.eyJjdXN0b206dGVuYW50X3NsdWciOiJmdW5rLXNhbmRib3gtcHJvZCIsInN1YiI6IjdkOWE0ZTBhLWNkNTgtNDEwYS05MDU2LTZiOTUyNzkyNDM4MSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbVwvZXUtY2VudHJhbC0xXzJ4ZWtITzhTOSIsImNvZ25pdG86dXNlcm5hbWUiOiJjaHJpcytmdW5rYWRtaW4xQGVtaWwuZGUiLCJjdXN0b206dGVuYW50X2lkIjoiNDAiLCJnaXZlbl9uYW1lIjoiRnVuayIsImN1c3RvbTpjb2RlIjoidXNyX3VGMnZvQlJWR2wwUFMwUjFzYlp2SCIsIm9yaWdpbl9qdGkiOiI4NTJhNWYwMi01NjIyLTQzMGUtODUwMy01NzFlOTEwOTc0NTEiLCJhdWQiOiI2cmNvN2Y5dGtldXRxaDZvNjQ4cmZkdDVkbyIsImV2ZW50X2lkIjoiNGI5YjkwOTEtZDllOC00MDFiLWJmMmEtNmU3OTZlNjdlNWU2IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3NTgwMTQ5OTMsImV4cCI6MTc1ODAxODU5MywiY3VzdG9tOnJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4MDE0OTkzLCJmYW1pbHlfbmFtZSI6IkFkbWluIiwiY3VzdG9tOnRlbmFudF9oaWVyYXJjaHkiOiJmdW5rLXNhbmRib3gtcHJvZCIsImp0aSI6IjM2NzBlMWFkLWY2NmMtNGQxMi1hOGIyLTZkOTNhMDhiNTg1MCIsImVtYWlsIjoiY2hyaXMrZnVua2FkbWluMUBlbWlsLmRlIn0.HsrYzdnhpSO3CGxKQ8v4uws4Wk7LLcqx-iyJjZ7N6ALWXcrE-_67C_g08PjjzQAALv03iorNkjPb1lXdDFx05Xa4gyS614RGAlC4AuXDEZl5jLC8F8kr2h6mS6Gz8G_bk3wr58b4wNvvqOyUG8SgvcvBOf4RLrtq0tHjYHbFrr0zapn92jp75RtghxFcQB4GRFb6Uc8Sv1c2hLrEDVU1CwI6Jk1J18SgXLiPcQorq0lOdxsEm5Mkv3dGVLUgV39OR2OfQejZIun2UslyS2OxnNzYskyrP0ZfkA0sScyAL2NuxHHi4TWI43QxDZi-ymd15cGXHGeiU3h6ldjVxhu7Xg"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+
+print(response.text)
