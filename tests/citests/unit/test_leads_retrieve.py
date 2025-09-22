@@ -27,4 +27,4 @@ def test_retrieve_lead_and_print_fields(capsys):
     assert re.search(r"^ID:\s*1111$", out, re.M)
     assert re.search(r"^Name:\s*Test Lead$", out, re.M)
     assert re.search(r"^Code:\s*2234$", out, re.M)
-    
+    print(out)
