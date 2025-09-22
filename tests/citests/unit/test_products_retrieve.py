@@ -19,7 +19,7 @@ def test_retrieve_product_prints_expected_fields(capsys):
     with patch("requests.get", return_value=mock_response):
         runpy.run_path(str(script_path), run_name="__main__")
 
-    out = capsys.readouterr()
+    out, err = capsys.readouterr()
     assert "Produkt:" in out
     assert "ID:        123" in out
     assert "Name:      Test Product" in out
