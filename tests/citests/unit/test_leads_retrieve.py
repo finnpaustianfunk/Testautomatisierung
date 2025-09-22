@@ -1,5 +1,6 @@
 from pathlib import Path
 import runpy
+import re
 from unittest.mock import Mock, patch
 
 
@@ -14,7 +15,7 @@ def test_retrieve_lead_and_print_fields(capsys):
         "name": "Test Lead",
         "code": "2234",
         "createdAt": "2025-09-22T13:00:00Z",
-        "details": {"k2", "v2"},
+        "details": {"k2": "v2"},
     }
 
     with patch("requests.get", return_value=mock_response):
@@ -22,7 +23,8 @@ def test_retrieve_lead_and_print_fields(capsys):
 
     out, err = capsys.readouterr()
     assert "Lead:" in out
-    assert "ID:     1111" in out
-    assert "Name:   Test Lead" in out
-    assert "Code:   2234" in out
-    print(out)
+    # Tolerant gegenüber variablen Abständen
+    assert re.search(r"^ID:\s*1111$", out, re.M)
+    assert re.search(r"^Name:\s*Test Lead$", out, re.M)
+    assert re.search(r"^Code:\s*2234$", out, re.M)
+    
