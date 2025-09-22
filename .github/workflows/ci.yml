@@ -52,6 +52,8 @@ jobs:
       - name: Run integration tests
         env:
           PYTHONPATH: .
+          EMIL_API_TOKEN: ${{ secrets.EMIL_API_TOKEN }}
+          optional EMIL:_PRODUCT_CODE: "4741"
         run: |
           pip install pytest
           pytest citests/integration --maxfail=1 --disable-warnings -q
