@@ -2,71 +2,22 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import tempfile
 import os
-import base64
 from pathlib import Path
+import shutil
 
 import requests
-from msal import ConfidentialClientApplication
-from msgraph import GraphServiceClient
-from msgraph.generated.models.message import Message
-from msgraph.generated.models.item_body import ItemBody
-from msgraph.generated.models.body_type import BodyType
-from msgraph.generated.models.recipient import Recipient
-from msgraph.generated.models.email_address import EmailAddress
-from msgraph.generated.models.attachment_item import AttachmentItem
-from msgraph.generated.models.file_attachment import FileAttachment
 
-# =====================
-# Konfiguration (ohne .env)
-# =====================
+# TODO: WORKFLOWS einbauen
 
-# API
-CONTRACTS_ENDPOINT = "https://app.emil.de/u/0/policies#policy-grid={%22query%22:%22%22,%22orderBy%22:{%22id%22:%22createdAt%22,%22desc%22:true}}"  # z. B. https://apiv2.emil.de/contractservice/v1/contracts
-API_TOKEN = "eyJraWQiOiJTWG9PU3RWOEEzNlVKR2o3bGRsXC9ocGU2QUV6T2E1Nzc3YmM3dTVKeXEyMD0iLCJhbGciOiJSUzI1NiJ9.eyJjdXN0b206dGVuYW50X3NsdWciOiJmdW5rLXNhbmRib3gtcHJvZCIsInN1YiI6IjdkOWE0ZTBhLWNkNTgtNDEwYS05MDU2LTZiOTUyNzkyNDM4MSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbVwvZXUtY2VudHJhbC0xXzJ4ZWtITzhTOSIsImNvZ25pdG86dXNlcm5hbWUiOiJjaHJpcytmdW5rYWRtaW4xQGVtaWwuZGUiLCJjdXN0b206dGVuYW50X2lkIjoiNDAiLCJnaXZlbl9uYW1lIjoiRnVuayIsImN1c3RvbTpjb2RlIjoidXNyX3VGMnZvQlJWR2wwUFMwUjFzYlp2SCIsIm9yaWdpbl9qdGkiOiI0N2I5NDllMi1mZmRhLTQzYTEtOGY2MS0wMTU3ODU2MzRmMjYiLCJhdWQiOiI2cmNvN2Y5dGtldXRxaDZvNjQ4cmZkdDVkbyIsImV2ZW50X2lkIjoiYWEyNjc2NjQtMmJmNC00MjA4LTlmN2UtZTE0OTM3ODViMjc2IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3NTgyODY3NTYsImV4cCI6MTc1ODI5MDM1NiwiY3VzdG9tOnJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4Mjg2NzU2LCJmYW1pbHlfbmFtZSI6IkFkbWluIiwiY3VzdG9tOnRlbmFudF9oaWVyYXJjaHkiOiJmdW5rLXNhbmRib3gtcHJvZCIsImp0aSI6IjU4YmY3YWE0LThhYWMtNDNmMi1iMWRjLWQ0ZWQ5OGU0NTFhYSIsImVtYWlsIjoiY2hyaXMrZnVua2FkbWluMUBlbWlsLmRlIn0.XNG41T78xmlGUfkKkHEkvuB5QHqNWZ08mWbXC_h1ARLHv1upwxgrlTiiuD0LRdwUraRb5NNqHVlz9QSdfkQCZaucD50x5ZeWszLUFvgoORgNUJ_PUnn4XKZiemlEZWJBrIbmQiBqMQPZKWv1NnhBvrohWeHbMenh5oUwrzxRh9dzDRJCPljNpFc2yJT5RtPf-y1ZITA8G23yonxKgoZjGWsfAEi8WQBWGL-80ZlU75MzjNWHarqwMy2ePO2jH6_43OGqPgsDfcv_NMuCU0tIsGfBbMhkRjRs8wA7zz12DHMJbXMi12a2BN1VDxRPbIko-2Sb1oXVkU5J00PlveK1_g"
+CONTRACTS_ENDPOINT = "https://apiv2.emil.de/insuranceservice/v1/policies"
+API_TOKEN = "eyJraWQiOiJTWG9PU3RWOEEzNlVKR2o3bGRsXC9ocGU2QUV6T2E1Nzc3YmM3dTVKeXEyMD0iLCJhbGciOiJSUzI1NiJ9.eyJjdXN0b206dGVuYW50X3NsdWciOiJmdW5rLXNhbmRib3gtcHJvZCIsInN1YiI6IjdkOWE0ZTBhLWNkNTgtNDEwYS05MDU2LTZiOTUyNzkyNDM4MSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbVwvZXUtY2VudHJhbC0xXzJ4ZWtITzhTOSIsImNvZ25pdG86dXNlcm5hbWUiOiJjaHJpcytmdW5rYWRtaW4xQGVtaWwuZGUiLCJjdXN0b206dGVuYW50X2lkIjoiNDAiLCJnaXZlbl9uYW1lIjoiRnVuayIsImN1c3RvbTpjb2RlIjoidXNyX3VGMnZvQlJWR2wwUFMwUjFzYlp2SCIsIm9yaWdpbl9qdGkiOiIwZjc4NWJjNC00M2Q2LTRhY2MtOTZiMC0yMjA5N2E4NzIwNzYiLCJhdWQiOiI2cmNvN2Y5dGtldXRxaDZvNjQ4cmZkdDVkbyIsImV2ZW50X2lkIjoiYjY3MTE2ZWUtZjFhNS00YzgwLTk1NzYtNGYzZmMzOWM4MjhhIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3NTg1NTAxNjMsImV4cCI6MTc1ODU1Mzc2MywiY3VzdG9tOnJvbGUiOiJ1c2VyIiwiaWF0IjoxNzU4NTUwMTYzLCJmYW1pbHlfbmFtZSI6IkFkbWluIiwiY3VzdG9tOnRlbmFudF9oaWVyYXJjaHkiOiJmdW5rLXNhbmRib3gtcHJvZCIsImp0aSI6ImJlOGY3NDgxLWExZWEtNDNmOC1hYzFkLTIyOTViMTdjMWIzMyIsImVtYWlsIjoiY2hyaXMrZnVua2FkbWluMUBlbWlsLmRlIn0.juC90J0LxPtQDgJj4bmB3QJC_bQlT1c66_DmpCo0veOk1mYzuvjIvNQ4PXfbNgH_-9mGXgAxW7gTK2gehthkWcAzPStGWacMxnUH0xYnKkb_vcmlaCpo4MvXgKBFFiYdy8o_6GZX8VZw3QsdrxQ11f1lAdUsaJ7_BpNpgvjk49S0lSoRwk038U3B-an_owwghcfpgTfIITxSqBBQGaot5kHPhUPlNzCMYl_xQj2Gfa61yHk_IbE8zu48nysyJ0NuVMwwqj1z-McYkqiQbGr3_MGdOw38gynEhEtBkUXiuJb_T26SwzS0qmrgSQtszI11wjzmCq9gEpNIY7ecj0-GHA"
 
-# Microsoft Graph Konfiguration
-TENANT_ID = "YOUR_TENANT_ID"  # Azure AD Tenant ID
-CLIENT_ID = "YOUR_CLIENT_ID"  # Azure AD App Registration Client ID
-CLIENT_SECRET = "YOUR_CLIENT_SECRET"  # Azure AD App Registration Client Secret
-AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
-SCOPES = ["https://graph.microsoft.com/.default"]
 
-# E-Mail Konfiguration
-EMAIL_FROM = "f.paustian@funk-gruppe.de"
-EMAIL_TO = ["f.paustian@funk-gruppe.de"]  # Liste für mehrere Empfänger
+VERIFY_SSL = False
 
 
 def iso_utc(dt: datetime) -> str:
     return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-def get_graph_client() -> GraphServiceClient:
-    """
-    Erstellt einen authentifizierten Microsoft Graph Client
-    """
-    app = ConfidentialClientApplication(
-        client_id=CLIENT_ID,
-        client_credential=CLIENT_SECRET,
-        authority=AUTHORITY
-    )
-    
-    # Token für Client Credentials Flow abrufen
-    result = app.acquire_token_silent(SCOPES, account=None)
-    if not result:
-        result = app.acquire_token_for_client(scopes=SCOPES)
-    
-    if "access_token" in result:
-        # GraphServiceClient mit dem Access Token erstellen
-        from msgraph.generated.models.o_data_errors.o_data_error import ODataError
-        from msgraph.core import GraphClientFactory
-        
-        def auth_provider(request):
-            request.headers['Authorization'] = f'Bearer {result["access_token"]}'
-            return request
-        
-        return GraphServiceClient(credentials=auth_provider)
-    else:
-        raise Exception(f"Fehler bei der Authentifizierung: {result.get('error_description', 'Unbekannter Fehler')}")
 
 
 def fetch_todays_contracts(
@@ -79,28 +30,29 @@ def fetch_todays_contracts(
         "authorization": f"Bearer {bearer_token}",
     }
 
-    now = datetime.now(timezone.utc)
-    start = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
-    start_iso = iso_utc(start)
-    end_iso = iso_utc(now)
-
     items: List[Dict[str, Any]] = []
     page_token: Optional[str] = None
 
     for _ in range(max_pages):
-        params: Dict[str, Any] = {
-            "order": "createdAt",
-            "from": start_iso,
-            "to": end_iso,
-        }
+        # Nur sortieren; Datum filtern wir clientseitig robust auf "heute"
+        params: Dict[str, Any] = {"order": "createdAt"}
         if page_token:
             params["pageToken"] = page_token
 
-        resp = requests.get(base_endpoint, headers=headers, params=params, timeout=30)
+        resp = requests.get(
+            base_endpoint,
+            headers=headers,
+            params=params,
+            timeout=30,
+            verify=VERIFY_SSL,
+        )
         if not resp.ok:
             raise RuntimeError(f"Request failed: {resp.status_code} {resp.text}")
 
-        data = resp.json()
+        try:
+            data = resp.json()
+        except Exception:
+            data = []
         page_items: List[Dict[str, Any]] = []
 
         if isinstance(data, dict):
@@ -129,15 +81,44 @@ def fetch_todays_contracts(
     return items
 
 
+def get_created_at(contract: Dict[str, Any]) -> str:
+    return (
+        contract.get("createdAt")
+        or contract.get("created")
+        or (contract.get("audit") or {}).get("createdAt")
+        or ""
+    )
+
+
+def is_today_utc(iso_str: str) -> bool:
+    try:
+        if not iso_str:
+            return False
+        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+        return dt.astimezone(timezone.utc).date() == datetime.now(timezone.utc).date()
+    except Exception:
+        return False
+
+
+def format_date_only(value: Any) -> str:
+    try:
+        s = str(value)
+        if not s or s == "-":
+            return "-"
+        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        return dt.strftime("%d.%m.%Y")
+    except Exception:
+        return str(value) if value else "-"
+
+
 def build_pdf_dashboard(contracts: List[Dict[str, Any]], report_title: str) -> str:
-    # Erfordert reportlab: pip install reportlab
     try:
         from reportlab.lib.pagesizes import A4
         from reportlab.lib import colors
         from reportlab.lib.styles import getSampleStyleSheet
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
     except Exception as e:
-        raise RuntimeError("reportlab ist erforderlich: pip install reportlab") from e
+        raise e
 
     tmp_pdf = tempfile.NamedTemporaryFile(prefix="contracts_report_", suffix=".pdf", delete=False)
     filename = tmp_pdf.name
@@ -155,18 +136,18 @@ def build_pdf_dashboard(contracts: List[Dict[str, Any]], report_title: str) -> s
     story.append(Spacer(1, 12))
 
     if contracts:
-        table_data: List[List[str]] = [["#", "ID", "Number", "ProductCode", "Status", "CreatedAt", "Customer"]]
+        table_data: List[List[str]] = [["#", "ID", "policyNumber", "Produkt", "Status", "Abgeschlossen am", "Startdatum"]]
 
         for idx, c in enumerate(contracts, start=1):
             contract_id = str(c.get("id") or c.get("contractId") or "-")
-            number = str(c.get("number") or c.get("contractNumber") or "-")
-            product_code = str(c.get("productCode") or (c.get("product") or {}).get("code") or "-")
+            p_number = str(c.get("policyNumber") or c.get("policyNumber") or "-")
+            product_code = str(c.get("productName") or (c.get("productName") or {}).get("code") or "-")
             status = str(c.get("status") or "-")
-            created_at = str(c.get("createdAt") or c.get("created") or "-")
-            customer = c.get("customer") or c.get("policyHolder") or {}
-            customer_name = str((customer.get("name") if isinstance(customer, dict) else None) or "-")
+            created_at = format_date_only(c.get("createdAt") or c.get("created") or "-")
+            start_date = format_date_only(c.get("policyStartDate") or "-")
+            #customer_name = str((customer.get("name") if isinstance(customer, dict) else None) or "-")
 
-            table_data.append([str(idx), contract_id, number, product_code, status, created_at, customer_name])
+            table_data.append([str(idx), contract_id, p_number, product_code, status, created_at, start_date])
 
         table = Table(table_data, repeatRows=1)
         table.setStyle(TableStyle([
@@ -186,70 +167,17 @@ def build_pdf_dashboard(contracts: List[Dict[str, Any]], report_title: str) -> s
     return filename
 
 
-def send_email_with_attachment(subject: str, body: str, attachment_path: str) -> None:
-    """
-    Sendet eine E-Mail mit Anhang über Microsoft Graph
-    """
-    try:
-        # Graph Client erstellen
-        graph_client = get_graph_client()
-        
-        # Anhang vorbereiten
-        attachment_name = Path(attachment_path).name
-        with open(attachment_path, "rb") as f:
-            attachment_content = base64.b64encode(f.read()).decode('utf-8')
-        
-        # File Attachment erstellen
-        file_attachment = FileAttachment()
-        file_attachment.name = attachment_name
-        file_attachment.content_bytes = attachment_content
-        file_attachment.content_type = "application/pdf"
-        
-        # Empfänger erstellen
-        recipients = []
-        for email in EMAIL_TO:
-            recipient = Recipient()
-            email_address = EmailAddress()
-            email_address.address = email
-            recipient.email_address = email_address
-            recipients.append(recipient)
-        
-        # E-Mail Body erstellen
-        email_body = ItemBody()
-        email_body.content_type = BodyType.Text
-        email_body.content = body
-        
-        # Message erstellen
-        message = Message()
-        message.subject = subject
-        message.body = email_body
-        message.to_recipients = recipients
-        message.attachments = [file_attachment]
-        
-        # E-Mail senden
-        graph_client.me.send_mail.post(body=message)
-        print(f"E-Mail erfolgreich gesendet an: {', '.join(EMAIL_TO)}")
-        
-    except Exception as e:
-        print(f"Fehler beim Senden der E-Mail: {str(e)}")
-        raise
-
-
 if __name__ == "__main__":
-    contracts = fetch_todays_contracts(CONTRACTS_ENDPOINT, API_TOKEN)
+    all_contracts = fetch_todays_contracts(CONTRACTS_ENDPOINT, API_TOKEN)
+    contracts = [c for c in all_contracts if is_today_utc(get_created_at(c))]
 
     now = datetime.now(timezone.utc)
     title = f"Daily Contracts Report – {now.strftime('%Y-%m-%d')}"
-    pdf_path = build_pdf_dashboard(contracts, title)
+    tmp_pdf_path = build_pdf_dashboard(contracts, title)
 
-    email_body = (
-        "Täglicher Vertrags-Report.\n"
-        f"Anzahl neuer Verträge heute: {len(contracts)}\n"
-        "Im Anhang findest du die Detailübersicht als PDF."
-    )
-
-    send_email_with_attachment(title, email_body, pdf_path)
-    print(f"Report erstellt und versendet: {pdf_path}")
-
-
-
+    # In tests/reports/dashboard.pdf speichern
+    out_dir = Path("tests/reports")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dest_path = out_dir / "dashboard.pdf"
+    shutil.copy(tmp_pdf_path, dest_path)
+    print(f"PDF gespeichert: {dest_path}")
