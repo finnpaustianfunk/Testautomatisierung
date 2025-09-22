@@ -1,6 +1,6 @@
 name: CI TESTS
 
-on: [oush, pull_request]
+on: [push, pull_request]
 
 jobs:
   unit-tests:
@@ -25,7 +25,7 @@ jobs:
           PYTHONPATH: .
         run: |
           pip install pytest
-          pytest tests/ --maxfail=1 --disable-warnings -q
+          pytest citests/ --maxfail=1 --disable-warnings -q
 
   integration-tests:
     runs-on: windows-latest
@@ -50,4 +50,4 @@ jobs:
           PYTHONPATH: .
         run: |
           pip install pytest
-          pytest tests/ --maxfail=1 --disable-warnings -q
+          pytest citests/ --maxfail=1 --disable-warnings -q
