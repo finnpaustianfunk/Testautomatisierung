@@ -17,7 +17,7 @@ def test_retrieve_lead_and_print_fields(capsys):
         "details": {"k2", "v2"},
     }
 
-    with patch("request.get", return_value=mock_response):
+    with patch("requests.get", return_value=mock_response):
         runpy.run_path(str(script_path), run_name="__main__")
 
     out, err = capsys.readouterr()
